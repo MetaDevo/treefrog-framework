@@ -80,6 +80,9 @@ QString SqlObjGenerator::generate(const QString &dstDir)
 
     QString output;
 
+    // TODO: jwc complete
+    tableSch->TableSchema::getForeignTables(tableSch->tableName());
+
     // Header part
     output += QString(SQLOBJECT_HEADER_TEMPLATE).arg(modelName.toUpper(), modelName);
     QListIterator<QPair<QString, QString>> it(fieldList);
