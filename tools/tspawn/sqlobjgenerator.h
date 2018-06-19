@@ -17,7 +17,7 @@ public:
     ~SqlObjGenerator();
     QString generate(const QString &dstDir);
     QList<QPair<QString, QVariant::Type>> fieldList() const;
-    QMap<QString, QPair<QString, QString>> foreignTables() const;
+    QMap<QString, QPair<QString, QString>> parentTables() const;
     int primaryKeyIndex() const;
     int autoValueIndex() const;
     int lockRevisionIndex() const;

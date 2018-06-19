@@ -26,7 +26,7 @@ public:
     bool hasLockRevisionField() const;
     static QStringList databaseDrivers();
     static QStringList tables(const QString &env = "dev");
-    QMap<QString, QPair<QString, QString>> getForeignTables() const;
+    QMap<QString, QPair<QString, QString>> getParentTables() const;
 
 protected:
     bool openDatabase(const QString &env) const;

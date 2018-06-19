@@ -642,7 +642,7 @@ QPair<ModelGenerator::PlaceholderList, ModelGenerator::PlaceholderList> ModelGen
              << pair("7", getparams)
              << pair("8", getImpl)
              << pair("10", getOptImpl)
-             << pair("50", genForeignAccessors())
+             << pair("50", genParentAccessors())
              << pair("11", ((objectType == Mongo) ? "Mongo" : ""));
 
     headerList << pair("7", "class QJsonArray;\n")
@@ -708,8 +708,8 @@ QString ModelGenerator::createParam(QVariant::Type type, const QString &name)
     return string;
 }
 
-QString ModelGenerator::genForeignAccessors() {
-    QMap<QString, QPair<QString, QString>> foreignTables = objGen->foreignTables();
+QString ModelGenerator::genParentAccessors() {
+    QMap<QString, QPair<QString, QString>> parentTables = objGen->parentTables();
 
     QString ret;
     QString t("\
@@ -721,8 +721,8 @@ QList<%1> %1::%2(int %4)\n\
     return tfGetModelListByCriteria<%1, %1Object>(cri);\n\
 }\n\n"); 
 
-    for (auto k: foreignTables.keys()) {
-            QPair<QString, QString> v = foreignTables.value(k);
+    for (auto k: parentTables.keys()) {
+            QPair<QString, QString> v = parentTables.value(k);
             QString methodName = "get" + fieldNameToEnumName("by_" + k);
             QString enumName = fieldNameToEnumName(k);
             QString variableName = fieldNameToVariableName(k);

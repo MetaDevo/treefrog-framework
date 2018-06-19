@@ -256,7 +256,7 @@ QStringList TableSchema::databaseDrivers()
     return QSqlDatabase::drivers();
 }
 
-QMap<QString, QPair<QString, QString>> TableSchema::getForeignTables() const
+QMap<QString, QPair<QString, QString>> TableSchema::getParentTables() const
 {
     QMap<QString, QPair<QString, QString>> map;
     QSqlQuery query(QSqlDatabase::database());

@@ -19,7 +19,7 @@ public:
     bool updateMongoObject(const QString &path);
     QString model() const { return modelName; }
     QList<QPair<QString, QVariant::Type>> fieldList() const { return fields; }
-    QMap<QString, QPair<QString, QString>> foreignTables() const { return fTables; }
+    QMap<QString, QPair<QString, QString>> parentTables() const { return pTables; }
     int primaryKeyIndex() const;
     int autoValueIndex() const;
     int lockRevisionIndex() const;
@@ -31,7 +31,7 @@ private:
     QString modelName;
     QString collectionName;
     QList<QPair<QString, QVariant::Type>> fields;
-    QMap<QString, QPair<QString, QString>> fTables;;
+    QMap<QString, QPair<QString, QString>> pTables;;
 };
 
 #endif // MONGOOBJGENERATOR_H
