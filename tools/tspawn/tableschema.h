@@ -27,6 +27,7 @@ public:
     static QStringList databaseDrivers();
     static QStringList tables(const QString &env = "dev");
     QMap<QString, QPair<QString, QString>> getParentTables() const;
+    QMap<QString, QPair<QString, QString>> getChildTables() const;
 
 protected:
     bool openDatabase(const QString &env) const;

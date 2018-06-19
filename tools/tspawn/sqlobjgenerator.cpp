@@ -74,6 +74,7 @@ QString SqlObjGenerator::generate(const QString &dstDir)
 {
     QList<QPair<QString, QString>> fieldList = tableSch->getFieldList();
     QMap<QString, QPair<QString, QString>> parentTables = tableSch->getParentTables();
+    QMap<QString, QPair<QString, QString>> childTables = tableSch->getChildTables();
 
     if (fieldList.isEmpty()) {
         qCritical("table not found, %s", qPrintable(tableSch->tableName()));
@@ -157,6 +158,11 @@ QList<QPair<QString, QVariant::Type>> SqlObjGenerator::fieldList() const
 QMap<QString, QPair<QString, QString>> SqlObjGenerator::parentTables() const
 {
     return tableSch->getParentTables();
+}
+
+QMap<QString, QPair<QString, QString>> SqlObjGenerator::childTables() const
+{
+    return tableSch->getChildTables();
 }
 
 int SqlObjGenerator::primaryKeyIndex() const
