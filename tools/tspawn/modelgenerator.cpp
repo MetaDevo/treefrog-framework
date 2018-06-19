@@ -123,6 +123,9 @@
     "}\n"                                                     \
     "\n"                                                      \
     "%10%"                                                    \
+    "\n"                                                      \
+    "%50%"                                                \
+    "\n"                                                 \
     "int %model%::count()\n"                                  \
     "{\n"                                                     \
     "    %13%<%model%Object> mapper;\n"                       \
@@ -639,6 +642,7 @@ QPair<ModelGenerator::PlaceholderList, ModelGenerator::PlaceholderList> ModelGen
              << pair("7", getparams)
              << pair("8", getImpl)
              << pair("10", getOptImpl)
+             << pair("50", genForeignAccessors())
              << pair("11", ((objectType == Mongo) ? "Mongo" : ""));
 
     headerList << pair("7", "class QJsonArray;\n")
@@ -702,6 +706,29 @@ QString ModelGenerator::createParam(QVariant::Type type, const QString &name)
         string += QString("const %1 &%2").arg(QVariant::typeToName(type), var);
     }
     return string;
+}
+
+QString ModelGenerator::genForeignAccessors() {
+    QMap<QString, QPair<QString, QString>> foreignTables = objGen->foreignTables();
+
+    QString ret;
+    QString t("\
+QList<%1> %1::%2(int %4)\n\
+{\n\
+    TSqlORMapper<%1Object> mapper;\n\
+    TCriteria cri;\n\
+    cri.add(%1Object::%3, %4);\n\
+    return tfGetModelListByCriteria<%1, %1Object>(cri);\n\
+}\n\n"); 
+
+    for (auto k: foreignTables.keys()) {
+            QPair<QString, QString> v = foreignTables.value(k);
+            QString methodName = "get" + fieldNameToEnumName("by_" + k);
+            QString enumName = fieldNameToEnumName(k);
+            QString variableName = fieldNameToVariableName(k);
+	    ret += t.arg(modelName).arg(methodName).arg(enumName).arg(variableName);
+    }
+    return ret;
 }
 
 

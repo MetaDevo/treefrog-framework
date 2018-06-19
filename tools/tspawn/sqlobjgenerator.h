@@ -4,6 +4,7 @@
 #include <QStringList>
 #include <QDir>
 #include <QPair>
+#include <QMap>
 #include "abstractobjgenerator.h"
 
 class TableSchema;
@@ -16,6 +17,7 @@ public:
     ~SqlObjGenerator();
     QString generate(const QString &dstDir);
     QList<QPair<QString, QVariant::Type>> fieldList() const;
+    QMap<QString, QPair<QString, QString>> foreignTables() const;
     int primaryKeyIndex() const;
     int autoValueIndex() const;
     int lockRevisionIndex() const;
