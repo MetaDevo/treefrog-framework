@@ -28,6 +28,8 @@
     "#include <TGlobal>\n"                               \
     "#include <TAbstractModel>\n"                        \
     "\n"                                                 \
+    "%62%"                                                \
+    "\n"                                                 \
     "class TModelObject;\n"                              \
     "class %model%Object;\n"                             \
     "%7%"                                                \
@@ -53,6 +55,8 @@
     "    static %model% create(const QVariantMap &values);\n" \
     "    static %model% get(%5%);\n"                     \
     "%6%"                                                \
+    "%60%"                                                \
+    "%61%"                                                \
     "    static int count();\n"                          \
     "    static QList<%model%> getAll();\n"              \
     "    static QList<%model%> getAll(const int limit,const int offset);\n"              \
@@ -584,7 +588,10 @@ QPair<ModelGenerator::PlaceholderList, ModelGenerator::PlaceholderList> ModelGen
                << pair("setgetDecl", setgetDecl)
                << pair("4", crtparams)
                << pair("5", getparams)
-               << pair("6", getOptDecl);
+               << pair("6", getOptDecl)
+               << pair("60", genParentAccessor())
+               << pair("61", genChildAccessor())
+               << pair("62", genChildIncludes());
 
     QString upsertDecl, upsertImpl;
     if (objectType == Mongo) {
@@ -645,8 +652,8 @@ QPair<ModelGenerator::PlaceholderList, ModelGenerator::PlaceholderList> ModelGen
              << pair("7", getparams)
              << pair("8", getImpl)
              << pair("10", getOptImpl)
-             << pair("50", genParentAccessors())
-             << pair("51", genChildAccessors())
+             << pair("50", genParentAccessorImpl())
+             << pair("51", genChildAccessorImpl())
              << pair("11", ((objectType == Mongo) ? "Mongo" : ""));
 
     headerList << pair("7", "class QJsonArray;\n")
@@ -711,8 +718,60 @@ QString ModelGenerator::createParam(QVariant::Type type, const QString &name)
     }
     return string;
 }
+/**/
+QString ModelGenerator::genChildIncludes() {
+    QMap<QPair<QString, QString>, QString>  childTables = objGen->childTables();
+    QMap<QString, bool> includes;
+    QString includeHeaders;
 
-QString ModelGenerator::genParentAccessors() {
+    for (auto k: childTables.keys()) {
+            QString parentFieldName = childTables.value(k);
+            QString childIncludeName = fieldNameToEnumName(k.first);
+            childIncludeName = childIncludeName.toLower() + ".h";
+            includes[childIncludeName] = true;
+    }
+
+    for (auto k: includes.keys()) {
+        includeHeaders += "#include \"" + k + "\"";
+    }
+    return includeHeaders;
+}
+/**/
+QString ModelGenerator::genParentAccessor() {
+    QMap<QString, QPair<QString, QString>> parentTables = objGen->parentTables();
+
+    QString ret;
+    QString t("    static QList<%1> %2(int %3);\n"); 
+
+    for (auto k: parentTables.keys()) {
+            QPair<QString, QString> v = parentTables.value(k);
+            QString methodName =  fieldNameToVariableName("get_by_" + k);
+            QString enumName = fieldNameToEnumName(k);
+            QString variableName = fieldNameToVariableName(k);
+	    ret += t.arg(modelName).arg(methodName).arg(variableName);
+    }
+    return ret;
+}
+
+QString ModelGenerator::genChildAccessor() {
+    QMap<QPair<QString, QString>, QString>  childTables = objGen->childTables();
+
+    QString ret;
+    QString t("    QList<%1> &%3();\n");
+
+    for (auto k: childTables.keys()) {
+        QString parentFieldName = childTables.value(k);
+        QString childModelName = fieldNameToEnumName(k.first);
+        QString childFieldName = k.second;
+        QString childMethodName = fieldNameToVariableName("get_by_" + childFieldName);
+        QString parentMethodName = childFieldName;
+        parentMethodName = fieldNameToVariableName(k.first);
+	    ret += t.arg(childModelName).arg(parentMethodName);
+    }
+    return ret;
+}
+
+QString ModelGenerator::genParentAccessorImpl() {
     QMap<QString, QPair<QString, QString>> parentTables = objGen->parentTables();
 
     QString ret;
@@ -728,7 +787,7 @@ QList<%1> %1::%2(int %4)\n\
 
     for (auto k: parentTables.keys()) {
             QPair<QString, QString> v = parentTables.value(k);
-            QString methodName = "get" + fieldNameToEnumName("by_" + k);
+            QString methodName =  fieldNameToVariableName("get_by_" + k);
             QString enumName = fieldNameToEnumName(k);
             QString variableName = fieldNameToVariableName(k);
 	    ret += t.arg(modelName).arg(methodName).arg(enumName).arg(variableName);
@@ -736,8 +795,7 @@ QList<%1> %1::%2(int %4)\n\
     return ret;
 }
 
-
-QString ModelGenerator::genChildAccessors() {
+QString ModelGenerator::genChildAccessorImpl() {
     QMap<QPair<QString, QString>, QString>  childTables = objGen->childTables();
 
     QString ret;
@@ -745,29 +803,30 @@ QString ModelGenerator::genChildAccessors() {
 /**Child Accesor**/\n\
 QList<%1> &%2::%5() {\n\
     if (!this->isNew())\n\
-        d->%5 =  %1::%4(this->%3());\n\
+        d->%3 =  %1::%4(this->%6());\n\
 \n\
-    return d->%5;\n\
+    return d->%3;\n\
 }\n\
 \n");
 
     for (auto k: childTables.keys()) {
-            QString parentFieldName = childTables.value(k);
+            QString parentGetName = childTables.value(k);
             QString childModelName = fieldNameToEnumName(k.first);
             QString childFieldName = k.second;
             QString childMethodName = fieldNameToVariableName("get_by_" + childFieldName);
-            QString parentMethodName = childFieldName;
-            //parentMethodName = fieldNameToVariableName(parentMethodName.remove(QRegExp("_id$")));
-            parentMethodName = fieldNameToVariableName(k.first);
+            QString parentFieldName = "_" + fieldNameToVariableName(k.first) + "_";
+            parentFieldName += fieldNameToVariableName(k.second);
+            QString parentMethodName = fieldNameToVariableName(k.first);
 
-            qDebug() << "---";
+            qDebug() << "--- Over here:";
             qDebug() << "parentMethodName: " << parentMethodName;
+            qDebug() << "parentGetName: " << parentMethodName;
             qDebug() << "parentFieldName: " << parentFieldName;
             qDebug() << "childModelName: " << childModelName;
             qDebug() << "childFieldName: " << childFieldName;
             qDebug() << "childMethodName: " << childMethodName;
 
-	    ret += t.arg(childModelName).arg(modelName).arg(parentFieldName).arg(childMethodName).arg(parentMethodName);
+	    ret += t.arg(childModelName).arg(modelName).arg(parentFieldName).arg(childMethodName).arg(parentMethodName).arg(parentGetName);
     }
     return ret;
 }

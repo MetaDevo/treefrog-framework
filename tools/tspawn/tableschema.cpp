@@ -280,9 +280,6 @@ QMap<QPair<QString, QString>, QString> TableSchema::getChildTables() const
             tablename + "'");
     query.exec();
     while (query.next()) {
-        qDebug() << "Datum2: " << query.value(2).toString() << " --------"; 
-        qDebug() << "Datum3: " << query.value(3).toString() << " --------"; 
-        qDebug() << "Datum6: " << query.value(6).toString() << " --------"; 
         QPair<QString, QString> qp(query.value(2).toString(), query.value(3).toString());
         map[qp] = query.value(6).toString();
     }

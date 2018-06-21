@@ -20,6 +20,7 @@
     "\n"                                                     \
     "#include <TSqlObject>\n"                                \
     "#include <QSharedData>\n"                               \
+    "\n%3\n"                                                   \
     "\n\n"                                                   \
     "class T_MODEL_EXPORT %2Object : public TSqlObject, public QSharedData\n" \
     "{\n"                                                    \
@@ -84,8 +85,21 @@ QString SqlObjGenerator::generate(const QString &dstDir)
 
     QString output;
 
+    QMap<QString, bool> includes;
+    for (auto k: childTables.keys()) {
+            QString parentFieldName = childTables.value(k);
+            QString childIncludeName = fieldNameToEnumName(k.first);
+            childIncludeName = childIncludeName.toLower() + ".h";
+            includes[childIncludeName] = true;
+    }
+
+    QString includeHeaders;
+    for (auto k: includes.keys()) {
+        includeHeaders += "#include \"" + k + "\"";
+    }
+
     // Header part
-    output += QString(SQLOBJECT_HEADER_TEMPLATE).arg(modelName.toUpper(), modelName);
+    output += QString(SQLOBJECT_HEADER_TEMPLATE).arg(modelName.toUpper(), modelName, includeHeaders);
     QListIterator<QPair<QString, QString>> it(fieldList);
     while (it.hasNext()) {
         const QPair<QString, QString> &p = it.next();
@@ -106,7 +120,6 @@ QString SqlObjGenerator::generate(const QString &dstDir)
             methodName += fieldNameToVariableName(k.second);
 
             output += QString("    QList<%1> _%2;\n").arg(childModelName).arg(methodName);
-
     }
 
 
