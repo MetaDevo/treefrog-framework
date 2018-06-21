@@ -40,6 +40,7 @@ protected:
     static void gen(const QString &fileName, const QString &format, const QList<QPair<QString, QString>> &values);
     static QString createParam(QVariant::Type type, const QString &name);
     QString genParentAccessors();
+    QString genChildAccessors();
 
 private:
     ObjectType objectType;

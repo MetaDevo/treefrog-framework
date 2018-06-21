@@ -20,7 +20,7 @@ public:
     QString model() const { return modelName; }
     QList<QPair<QString, QVariant::Type>> fieldList() const { return fields; }
     QMap<QString, QPair<QString, QString>> parentTables() const { return pTables; }
-    QMap<QString, QPair<QString, QString>> childTables() const { return cTables; }
+    QMap<QPair<QString, QString>, QString> childTables() const { return cTables; }
     int primaryKeyIndex() const;
     int autoValueIndex() const;
     int lockRevisionIndex() const;
@@ -33,7 +33,7 @@ private:
     QString collectionName;
     QList<QPair<QString, QVariant::Type>> fields;
     QMap<QString, QPair<QString, QString>> pTables;;
-    QMap<QString, QPair<QString, QString>> cTables;;
+    QMap<QPair<QString, QString>, QString> cTables;;
 };
 
 #endif // MONGOOBJGENERATOR_H

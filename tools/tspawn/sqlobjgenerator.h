@@ -18,7 +18,7 @@ public:
     QString generate(const QString &dstDir);
     QList<QPair<QString, QVariant::Type>> fieldList() const;
     QMap<QString, QPair<QString, QString>> parentTables() const;
-    QMap<QString, QPair<QString, QString>> childTables() const;
+    QMap<QPair<QString, QString>, QString> childTables() const;
     int primaryKeyIndex() const;
     int autoValueIndex() const;
     int lockRevisionIndex() const;

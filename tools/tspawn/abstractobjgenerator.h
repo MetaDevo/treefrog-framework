@@ -14,7 +14,7 @@ public:
     virtual QString generate(const QString &dstDir) = 0;
     virtual QList<QPair<QString, QVariant::Type>> fieldList() const = 0;
     virtual QMap<QString, QPair<QString, QString>> parentTables() const = 0;
-    virtual QMap<QString, QPair<QString, QString>> childTables() const = 0;
+    virtual QMap<QPair<QString, QString>, QString> childTables() const = 0;
     virtual int primaryKeyIndex() const { return -1; }
     virtual int autoValueIndex() const { return -1; }
     virtual int lockRevisionIndex() const { return -1; }

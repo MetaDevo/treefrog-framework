@@ -5,6 +5,7 @@
  * the New BSD License, which is incorporated herein by reference.
  */
 
+#include <QtCore>
 #include "sqlobjgenerator.h"
 #include "global.h"
 #include "filewriter.h"
@@ -74,7 +75,7 @@ QString SqlObjGenerator::generate(const QString &dstDir)
 {
     QList<QPair<QString, QString>> fieldList = tableSch->getFieldList();
     QMap<QString, QPair<QString, QString>> parentTables = tableSch->getParentTables();
-    QMap<QString, QPair<QString, QString>> childTables = tableSch->getChildTables();
+    QMap<QPair<QString, QString>, QString> childTables = tableSch->getChildTables();
 
     if (fieldList.isEmpty()) {
         qCritical("table not found, %s", qPrintable(tableSch->tableName()));
@@ -94,6 +95,20 @@ QString SqlObjGenerator::generate(const QString &dstDir)
             output += QString("    %1 %2;\n").arg(p.second, p.first);
         }
     }
+
+    output += "\n";
+
+    // associations
+    for (auto k: childTables.keys()) {
+            QString parentFieldName = childTables.value(k);
+            QString childModelName = fieldNameToEnumName(k.first);
+            QString methodName = fieldNameToVariableName(k.first) + "_";
+            methodName += fieldNameToVariableName(k.second);
+
+            output += QString("    QList<%1> _%2;\n").arg(childModelName).arg(methodName);
+
+    }
+
 
     // enum part
     output += QLatin1String("\n    enum PropertyIndex {\n");
@@ -160,7 +175,7 @@ QMap<QString, QPair<QString, QString>> SqlObjGenerator::parentTables() const
     return tableSch->getParentTables();
 }
 
-QMap<QString, QPair<QString, QString>> SqlObjGenerator::childTables() const
+QMap<QPair<QString, QString>, QString> SqlObjGenerator::childTables() const
 {
     return tableSch->getChildTables();
 }

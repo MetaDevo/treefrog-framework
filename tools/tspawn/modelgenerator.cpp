@@ -5,6 +5,7 @@
  * the New BSD License, which is incorporated herein by reference.
  */
 
+#include <QtCore>
 #include "modelgenerator.h"
 #include "sqlobjgenerator.h"
 #include "mongoobjgenerator.h"
@@ -125,6 +126,8 @@
     "%10%"                                                    \
     "\n"                                                      \
     "%50%"                                                \
+    "\n"                                                      \
+    "%51%"                                                \
     "\n"                                                 \
     "int %model%::count()\n"                                  \
     "{\n"                                                     \
@@ -643,6 +646,7 @@ QPair<ModelGenerator::PlaceholderList, ModelGenerator::PlaceholderList> ModelGen
              << pair("8", getImpl)
              << pair("10", getOptImpl)
              << pair("50", genParentAccessors())
+             << pair("51", genChildAccessors())
              << pair("11", ((objectType == Mongo) ? "Mongo" : ""));
 
     headerList << pair("7", "class QJsonArray;\n")
@@ -713,6 +717,7 @@ QString ModelGenerator::genParentAccessors() {
 
     QString ret;
     QString t("\
+/**Parent Accesor**/\n\
 QList<%1> %1::%2(int %4)\n\
 {\n\
     TSqlORMapper<%1Object> mapper;\n\
@@ -727,6 +732,42 @@ QList<%1> %1::%2(int %4)\n\
             QString enumName = fieldNameToEnumName(k);
             QString variableName = fieldNameToVariableName(k);
 	    ret += t.arg(modelName).arg(methodName).arg(enumName).arg(variableName);
+    }
+    return ret;
+}
+
+
+QString ModelGenerator::genChildAccessors() {
+    QMap<QPair<QString, QString>, QString>  childTables = objGen->childTables();
+
+    QString ret;
+    QString t("\
+/**Child Accesor**/\n\
+QList<%1> &%2::%5() {\n\
+    if (!this->isNew())\n\
+        d->%5 =  %1::%4(this->%3());\n\
+\n\
+    return d->%5;\n\
+}\n\
+\n");
+
+    for (auto k: childTables.keys()) {
+            QString parentFieldName = childTables.value(k);
+            QString childModelName = fieldNameToEnumName(k.first);
+            QString childFieldName = k.second;
+            QString childMethodName = fieldNameToVariableName("get_by_" + childFieldName);
+            QString parentMethodName = childFieldName;
+            //parentMethodName = fieldNameToVariableName(parentMethodName.remove(QRegExp("_id$")));
+            parentMethodName = fieldNameToVariableName(k.first);
+
+            qDebug() << "---";
+            qDebug() << "parentMethodName: " << parentMethodName;
+            qDebug() << "parentFieldName: " << parentFieldName;
+            qDebug() << "childModelName: " << childModelName;
+            qDebug() << "childFieldName: " << childFieldName;
+            qDebug() << "childMethodName: " << childMethodName;
+
+	    ret += t.arg(childModelName).arg(modelName).arg(parentFieldName).arg(childMethodName).arg(parentMethodName);
     }
     return ret;
 }
