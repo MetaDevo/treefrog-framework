@@ -76,8 +76,20 @@ QList<QPair<QString, QVariant::Type>> TableSchema::getFieldTypeList() const
     for (int i = 0; i < tableFields.count(); ++i) {
         QSqlField f = tableFields.field(i);
         fieldList << QPair<QString, QVariant::Type>(f.name(), f.type());
+qDebug() << "Name: " << f.name() << " Type: " << f.type();
     }
     return fieldList;
+}
+
+QMap<QString, QVariant::Type> TableSchema::getFieldTypeMap() const
+{
+    QMap<QString, QVariant::Type> fieldMap;
+    for (int i = 0; i < tableFields.count(); ++i) {
+        QSqlField f = tableFields.field(i);
+        fieldMap[f.name()] = f.type();
+qDebug() << "Name: " << f.name() << " Type: " << f.type();
+    }
+    return fieldMap;
 }
 
 

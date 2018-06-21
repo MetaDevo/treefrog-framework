@@ -15,6 +15,7 @@ public:
     bool exists() const;
     QList<QPair<QString, QString>> getFieldList() const;
     QList<QPair<QString, QVariant::Type>> getFieldTypeList() const;
+    QMap<QString, QVariant::Type> getFieldTypeMap() const;
     int primaryKeyIndex() const;
     QString primaryKeyFieldName() const;
     int autoValueIndex() const;

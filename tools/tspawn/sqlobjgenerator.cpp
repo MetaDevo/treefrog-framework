@@ -183,6 +183,13 @@ QList<QPair<QString, QVariant::Type>> SqlObjGenerator::fieldList() const
     return tableSch->getFieldTypeList();
 }
 
+
+QMap<QString, QVariant::Type> SqlObjGenerator::fieldTypeMap() const 
+{
+    return tableSch->getFieldTypeMap();
+}
+
+
 QMap<QString, QPair<QString, QString>> SqlObjGenerator::parentTables() const
 {
     return tableSch->getParentTables();

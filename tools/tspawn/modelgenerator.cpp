@@ -773,6 +773,7 @@ QString ModelGenerator::genChildAccessor() {
 
 QString ModelGenerator::genParentAccessorImpl() {
     QMap<QString, QPair<QString, QString>> parentTables = objGen->parentTables();
+    QMap<QString, QVariant::Type> fieldTypeMap = objGen->fieldTypeMap();
 
     QString ret;
     QString t("\
@@ -787,6 +788,12 @@ QList<%1> %1::%2(int %4)\n\
 
     for (auto k: parentTables.keys()) {
             QPair<QString, QString> v = parentTables.value(k);
+qDebug() << "k: " << k;
+qDebug() << "1: " << v.first;
+qDebug() << "2: " << v.second;
+            QVariant::Type variableType = fieldTypeMap[v.second];
+qDebug() << "variableType1: " << variableType;
+qDebug() << "variableType2: " << variableType.typeName();
             QString methodName =  fieldNameToVariableName("get_by_" + k);
             QString enumName = fieldNameToEnumName(k);
             QString variableName = fieldNameToVariableName(k);
