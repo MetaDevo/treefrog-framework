@@ -739,16 +739,20 @@ QString ModelGenerator::genChildIncludes() {
 /**/
 QString ModelGenerator::genParentAccessor() {
     QMap<QString, QPair<QString, QString>> parentTables = objGen->parentTables();
+    QMap<QString, QVariant::Type> fieldTypeMap = objGen->fieldTypeMap();
 
     QString ret;
-    QString t("    static QList<%1> %2(int %3);\n"); 
+    QString t("    static QList<%1> %2(%4 %3);\n"); 
 
     for (auto k: parentTables.keys()) {
             QPair<QString, QString> v = parentTables.value(k);
+            QVariant::Type variableType = fieldTypeMap[v.second];
+            QVariant x(variableType);
+            QString variableTypeName = x.typeName();
             QString methodName =  fieldNameToVariableName("get_by_" + k);
             QString enumName = fieldNameToEnumName(k);
             QString variableName = fieldNameToVariableName(k);
-	    ret += t.arg(modelName).arg(methodName).arg(variableName);
+	    ret += t.arg(modelName).arg(methodName).arg(variableName).arg(variableTypeName);
     }
     return ret;
 }
@@ -778,7 +782,7 @@ QString ModelGenerator::genParentAccessorImpl() {
     QString ret;
     QString t("\
 /**Parent Accesor**/\n\
-QList<%1> %1::%2(int %4)\n\
+QList<%1> %1::%2(%5 %4)\n\
 {\n\
     TSqlORMapper<%1Object> mapper;\n\
     TCriteria cri;\n\
@@ -788,16 +792,13 @@ QList<%1> %1::%2(int %4)\n\
 
     for (auto k: parentTables.keys()) {
             QPair<QString, QString> v = parentTables.value(k);
-qDebug() << "k: " << k;
-qDebug() << "1: " << v.first;
-qDebug() << "2: " << v.second;
             QVariant::Type variableType = fieldTypeMap[v.second];
-qDebug() << "variableType1: " << variableType;
-qDebug() << "variableType2: " << variableType.typeName();
+            QVariant x(variableType);
+            QString variableTypeName = x.typeName();
             QString methodName =  fieldNameToVariableName("get_by_" + k);
             QString enumName = fieldNameToEnumName(k);
             QString variableName = fieldNameToVariableName(k);
-	    ret += t.arg(modelName).arg(methodName).arg(enumName).arg(variableName);
+	    ret += t.arg(modelName).arg(methodName).arg(enumName).arg(variableName).arg(variableTypeName);
     }
     return ret;
 }
