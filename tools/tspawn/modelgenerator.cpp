@@ -839,6 +839,15 @@ QList<%1> &%2::%5() {\n\
     return ret;
 }
 
+QMap<QPair<QString, QString>, QString>  ModelGenerator::childTables() const
+{
+    return objGen->childTables();
+}
+
+QMap<QString, QPair<QString, QString>> ModelGenerator::parentTables() const
+{
+    return objGen->parentTables();
+}
 
 ModelGenerator::FieldList ModelGenerator::fieldList() const
 {

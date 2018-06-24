@@ -31,6 +31,9 @@ public:
     QString model() const { return modelName; }
     static QString replaceholder(const QString &format, const QPair<QString, QString> &value);
     static QString replaceholder(const QString &format, const PlaceholderList &values);
+    QMap<QPair<QString, QString>, QString>  childTables() const;
+    QMap<QString, QPair<QString, QString>> parentTables() const;
+
 
 protected:
     QStringList genModel(const QString &dstDir);
