@@ -48,6 +48,33 @@
     "</body>\n"                                                         \
     "</html>\n"
 
+
+#define CHILD_INDEX_TEMPLATE                                            \
+    "\n"                                                                \
+    "<h1>Listing %2</h1>\n"                                             \
+    "\n"                                                                \
+    "<%== linkTo(\"Create a new %2\", url(\"%1\", \"create\")) %><br />\n"     \
+    "<br />\n"                                                          \
+    "<table border=\"1\" cellpadding=\"5\" style=\"border: 1px #d0d0d0 solid; border-collapse: collapse;\">\n" \
+    "  <tr>\n"                                                          \
+    "%3"                                                                \
+    "  </tr>\n"                                                         \
+    "<% tfetch(QList<%4>, %5List); %>\n"                                \
+// Child::getByParentId(parent["id"].toString()) TODO: complete
+    "<% for (const auto &i : %5List) { %>\n"                            \
+    "  <tr>\n"                                                          \
+    "%6"                                                                \
+    "    <td>\n"                                                        \
+    "      <%== linkTo(\"Show\", url(\"%1\", \"show\", i.%7())) %>\n"          \
+    "      <%== linkTo(\"Edit\", url(\"%1\", \"save\", i.%7())) %>\n"          \
+    "      <%== linkTo(\"Remove\", url(\"%1\", \"remove\", i.%7()), Tf::Post, \"confirm('Are you sure?')\") %>\n" \
+    "    </td>\n"                                                       \
+    "  </tr>\n"                                                         \
+    "<% } %>\n"                                                         \
+    "</table>\n"                                                        \
+    "\n"                                                                \
+
+
 #define SHOW_TEMPLATE                                                   \
     "<!DOCTYPE html>\n"                                                 \
     "<%#include \"%1.h\" %>\n"                                          \
@@ -119,7 +146,12 @@
     "    <input type=\"submit\" value=\"Save\" />\n"                    \
     "  </p>\n"                                                          \
     "</form>\n"                                                         \
+    "<br>\n"                                                            \
     "\n"                                                                \
+    "XXX<br>\n"                                                         \
+    "%7<br>\n"                                                         \
+    "\n"                                                                \
+    "<br>\n"                                                            \
     "<%== linkTo(\"Show\", urla(\"show\", %2[\"%4\"])) %> |\n"          \
     "<%== linkTo(\"Back\", urla(\"index\")) %>\n"                       \
     "</body>\n"                                                         \
@@ -146,8 +178,8 @@ static const QStringList excludedDirName = {
 };
 
 
-ErbGenerator::ErbGenerator(const QString &view, const QList<QPair<QString, QVariant::Type>> &fields, int pkIdx, int autoValIdx)
-    : viewName(view), fieldList(fields), primaryKeyIndex(pkIdx), autoValueIndex(autoValIdx)
+ErbGenerator::ErbGenerator(const QString &view, const QList<QPair<QString, QVariant::Type>> &fields, int pkIdx, int autoValIdx, const QString &ct)
+    : viewName(view), fieldList(fields), primaryKeyIndex(pkIdx), autoValueIndex(autoValIdx), childText(ct)
 { }
 
 
@@ -221,7 +253,8 @@ bool ErbGenerator::generate(const QString &dstDir) const
         }
     }
 
-    output = QString(INDEX_TEMPLATE).arg(varName.toLower(), caption, th, viewName, varName,td, pkVarName);
+    output = QString(INDEX_TEMPLATE).arg(varName.toLower(), caption, th, viewName, varName, td, pkVarName);
+//                                   1                      2        3   4         5        6   7
     fw.setFilePath(dir.filePath("index.erb"));
     if (!fw.write(output, false)) {
         return false;
@@ -239,11 +272,42 @@ bool ErbGenerator::generate(const QString &dstDir) const
         return false;
     }
 
-    output = QString(SAVE_TEMPLATE).arg(varName.toLower(), varName, caption, pkVarName, edititems);
+    output = QString(SAVE_TEMPLATE).arg(varName.toLower(), varName, caption, pkVarName, edititems, childText);
+//                                      1                  2        3        4          6          7
     fw.setFilePath(dir.filePath("save.erb"));
     if (!fw.write(output, false)) {
         return false;
     }
 
     return true;
+}
+
+QString ErbGenerator::genChildIndex() const
+{ 
+    QString caption = enumNameToCaption(viewName);
+    QString varName = enumNameToVariableName(viewName);
+    const QPair<QString, QVariant::Type> &pkFld = fieldList[primaryKeyIndex];
+    QString pkVarName = fieldNameToVariableName(pkFld.first);
+
+    // Generates index.html.erb
+    QString th, td, showitems, entryitems, edititems;
+    for (int i = 0; i < fieldList.count(); ++i) {
+        const QPair<QString, QVariant::Type> &p = fieldList[i];
+
+        QString icap = fieldNameToCaption(p.first);
+        QString ivar = fieldNameToVariableName(p.first);
+
+        if (!excludedColumn.contains(ivar, Qt::CaseInsensitive)) {
+            th += "    <th>";
+            th += icap;
+            th += "</th>\n";
+
+            td += "    <td><%= i.";
+            td += ivar;
+            td += "() %></td>\n";
+        }
+    }
+
+    return QString(CHILD_INDEX_TEMPLATE).arg(varName.toLower(), caption, th, viewName, varName, td, pkVarName);
+//                                       1                      2        3   4         5        6   7
 }

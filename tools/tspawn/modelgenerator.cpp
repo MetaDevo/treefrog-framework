@@ -826,13 +826,13 @@ QList<%1> &%2::%5() {\n\
             parentFieldName += fieldNameToVariableName(k.second);
             QString parentMethodName = fieldNameToVariableName(k.first);
 
-            qDebug() << "--- Over here:";
-            qDebug() << "parentMethodName: " << parentMethodName;
-            qDebug() << "parentGetName: " << parentMethodName;
-            qDebug() << "parentFieldName: " << parentFieldName;
-            qDebug() << "childModelName: " << childModelName;
-            qDebug() << "childFieldName: " << childFieldName;
-            qDebug() << "childMethodName: " << childMethodName;
+//            qDebug() << "--- Over here:";
+//            qDebug() << "parentMethodName: " << parentMethodName;
+//            qDebug() << "parentGetName: " << parentMethodName;
+//            qDebug() << "parentFieldName: " << parentFieldName;
+//            qDebug() << "childModelName: " << childModelName;
+//            qDebug() << "childFieldName: " << childFieldName;
+//            qDebug() << "childMethodName: " << childMethodName;
 
 	    ret += t.arg(childModelName).arg(modelName).arg(parentFieldName).arg(childMethodName).arg(parentMethodName).arg(parentGetName);
     }
