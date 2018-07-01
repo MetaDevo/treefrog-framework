@@ -5,6 +5,7 @@
  * the New BSD License, which is incorporated herein by reference.
  */
 
+#include <QtCore>
 #include <QList>
 #include <QPair>
 #include "erbgenerator.h"
@@ -49,6 +50,11 @@
     "</html>\n"
 
 
+// Child::getByParentId(parent["id"].toString()) TODO: complete %8
+//parentFieldName:  "id"
+//childTableName:  "child"
+//childFieldName:  "parent_id"
+
 #define CHILD_INDEX_TEMPLATE                                            \
     "\n"                                                                \
     "<h1>Listing %2</h1>\n"                                             \
@@ -59,9 +65,7 @@
     "  <tr>\n"                                                          \
     "%3"                                                                \
     "  </tr>\n"                                                         \
-    "<% tfetch(QList<%4>, %5List); %>\n"                                \
-// Child::getByParentId(parent["id"].toString()) TODO: complete
-    "<% for (const auto &i : %5List) { %>\n"                            \
+    "<% for (const auto &i : %4::%8(%5[\"%9\"].toString())) { %>\n" \
     "  <tr>\n"                                                          \
     "%6"                                                                \
     "    <td>\n"                                                        \
@@ -282,12 +286,19 @@ bool ErbGenerator::generate(const QString &dstDir) const
     return true;
 }
 
-QString ErbGenerator::genChildIndex() const
+QString ErbGenerator::genChildIndex(const QString &parentFieldName, const QString &childTableName, const QString &childFieldName) const
 { 
     QString caption = enumNameToCaption(viewName);
     QString varName = enumNameToVariableName(viewName);
     const QPair<QString, QVariant::Type> &pkFld = fieldList[primaryKeyIndex];
     QString pkVarName = fieldNameToVariableName(pkFld.first);
+
+    QString methodName =  fieldNameToVariableName("get_by_" + childFieldName);
+    QString parentVariableName =  fieldNameToVariableName(parentFieldName);
+
+qDebug() << "parentFieldName: " << parentFieldName;
+qDebug() << "childTableName: " << childTableName;
+qDebug() << "childFieldName: " << childFieldName;
 
     // Generates index.html.erb
     QString th, td, showitems, entryitems, edititems;
@@ -308,6 +319,6 @@ QString ErbGenerator::genChildIndex() const
         }
     }
 
-    return QString(CHILD_INDEX_TEMPLATE).arg(varName.toLower(), caption, th, viewName, varName, td, pkVarName);
-//                                       1                      2        3   4         5        6   7
+    return QString(CHILD_INDEX_TEMPLATE).arg(varName.toLower(), caption, th, viewName, varName, td, pkVarName, methodName, parentVariableName);
+//                                       1                      2        3   4         5        6   7          8           9
 }

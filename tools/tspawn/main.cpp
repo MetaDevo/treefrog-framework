@@ -711,9 +711,11 @@ int main(int argc, char *argv[])
             QMap<QPair<QString, QString>, QString>  childTables = modelgen.childTables();
             for (auto k: childTables.keys()) {
                 QString parentFieldName = childTables.value(k);
+qDebug() << "parentFieldName: " << parentFieldName;
                 QString childTableName = k.first;
                 QString childFieldName = k.second;
 qDebug() << "childTableName: " << childTableName;
+qDebug() << "childFieldName: " << childFieldName;
 
                 int pkidxChild = modelgen.primaryKeyIndex();
                 if (pkidxChild < 0) {
@@ -724,7 +726,7 @@ qDebug() << "childTableName: " << childTableName;
                 ModelGenerator modelgenChild(ModelGenerator::Sql, "", childTableName);
                 QString qs;
                 ErbGenerator viewgenChild(modelgenChild.model(), modelgenChild.fieldList(), pkidxChild, modelgenChild.autoValueIndex(), qs);
-                childErb += viewgenChild.genChildIndex();
+                childErb += viewgenChild.genChildIndex(parentFieldName, childTableName, childFieldName);
             }
 
             ControllerGenerator crtlgen(modelgen.model(), modelgen.fieldList(), pkidx, modelgen.lockRevisionIndex());
