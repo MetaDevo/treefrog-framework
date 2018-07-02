@@ -12,7 +12,7 @@ class ErbGenerator
 public:
     ErbGenerator(const QString &view, const QList<QPair<QString, QVariant::Type>> &fields, int pkIdx, int autoValIdx, const QString &childText);
     bool generate(const QString &dstDir) const;
-    QString genChildIndex(const QString &parentFieldName, const QString &childTableName, const QString &childFieldName) const;
+    QString genChildIndex(const QString &parentViewName, const QString &parentFieldName, const QString &childTableName, const QString &childFieldName) const;
 
 private:
     QString viewName;
