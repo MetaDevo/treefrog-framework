@@ -177,8 +177,8 @@ static const QStringList excludedDirName = {
 };
 
 
-ErbGenerator::ErbGenerator(const QString &view, const QList<QPair<QString, QVariant::Type>> &fields, int pkIdx, int autoValIdx, const QString &ct)
-    : viewName(view), fieldList(fields), primaryKeyIndex(pkIdx), autoValueIndex(autoValIdx), childText(ct)
+ErbGenerator::ErbGenerator(const QString &view, const QList<QPair<QString, QVariant::Type>> &fields, int pkIdx, int autoValIdx, const QList<QString> &ct)
+    : viewName(view), fieldList(fields), primaryKeyIndex(pkIdx), autoValueIndex(autoValIdx), childTables(ct)
 { }
 
 
@@ -232,11 +232,20 @@ bool ErbGenerator::generate(const QString &dstDir) const
             if (i != autoValueIndex) {  // case of not auto-value field
                 entryitems += "  <p>\n    <label>";
                 entryitems += icap;
-                entryitems += "<br /><input name=\"";
-                entryitems += varName + '[' + ivar + ']';
-                entryitems += "\" value=\"<%= ";
-                entryitems += varName + "[\"" + ivar + "\"]";
-                entryitems += " %>\" /></label>\n  </p>\n";
+
+                if (childTables.indexOf(p.first) != -1) {
+                    entryitems += "<br /><select name=\"";
+                    entryitems += varName + '[' + ivar + ']' + "\">\t";
+                    entryitems += "<%== optionTags(" + viewName + "::validChildren()) %>";
+                    entryitems += "</select>";
+                } else {
+                    entryitems += "<br /><input name=\"";
+                    entryitems += varName + '[' + ivar + ']';
+                    entryitems += "\" value=\"<%= ";
+                    entryitems += varName + "[\"" + ivar + "\"]";
+                    entryitems += " %>\" />";
+                }
+                entryitems += "</label>\n  </p>\n";
             }
             edititems += "  <p>\n    <label>";
             edititems += icap;
@@ -271,6 +280,7 @@ bool ErbGenerator::generate(const QString &dstDir) const
         return false;
     }
 
+    QString childText; //@todo fix--ERB generator shouldn't have concept of children
     output = QString(SAVE_TEMPLATE).arg(varName.toLower(), varName, caption, pkVarName, edititems, childText);
 //                                      1                  2        3        4          6          7
     fw.setFilePath(dir.filePath("save.erb"));

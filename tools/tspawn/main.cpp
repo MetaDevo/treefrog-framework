@@ -642,7 +642,7 @@ int main(int argc, char *argv[])
             ControllerGenerator crtlgen(modelgen.model(), modelgen.fieldList(), modelgen.primaryKeyIndex(), modelgen.lockRevisionIndex());
             success &= crtlgen.generate(D_CTRLS);
 
-            QString qs;
+            QList<QString> qs; // unused
             // Generates view files of the specified template system
             if (templateSystem == "otama") {
                 OtamaGenerator viewgen(modelgen.model(), modelgen.fieldList(), modelgen.primaryKeyIndex(), modelgen.autoValueIndex());
@@ -708,11 +708,15 @@ int main(int argc, char *argv[])
             }
 
             QString childErb;
-            QMap<QPair<QString, QString>, QString>  childTables = modelgen.childTables();
+            QMap<QPair<QString, QString>, QString> childTables = modelgen.childTables();
+            qWarning() << "ctlist size: " << childTables.values().size(); //temp
             for (auto k: childTables.keys()) {
                 QString parentFieldName = childTables.value(k);
                 QString childTableName = k.first;
                 QString childFieldName = k.second;
+
+                //temp
+                printf("parentFieldName: %s\nchildTableName: %s\nchildFieldName: %s\n ", parentFieldName.toStdString().c_str(), childTableName.toStdString().c_str(), childFieldName.toStdString().c_str());
 
                 int pkidxChild = modelgen.primaryKeyIndex();
                 if (pkidxChild < 0) {
@@ -721,9 +725,9 @@ int main(int argc, char *argv[])
                 }
 
                 ModelGenerator modelgenChild(ModelGenerator::Sql, "", childTableName);
-                QString qs;
-                ErbGenerator viewgenChild(modelgenChild.model(), modelgenChild.fieldList(), pkidxChild, modelgenChild.autoValueIndex(), qs);
-                childErb += viewgenChild.genChildIndex(modelgen.model(), parentFieldName, childTableName, childFieldName);
+                //QString qs;
+                //ErbGenerator viewgenChild(modelgenChild.model(), modelgenChild.fieldList(), pkidxChild, modelgenChild.autoValueIndex(), qs);
+                //childErb += viewgenChild.genChildIndex(modelgen.model(), parentFieldName, childTableName, childFieldName);
             }
 
             ControllerGenerator crtlgen(modelgen.model(), modelgen.fieldList(), pkidx, modelgen.lockRevisionIndex());
@@ -734,7 +738,7 @@ int main(int argc, char *argv[])
                 OtamaGenerator viewgen(modelgen.model(), modelgen.fieldList(), pkidx, modelgen.autoValueIndex());
                 viewgen.generate(D_VIEWS);
             } else if (templateSystem == "erb") {
-                ErbGenerator viewgen(modelgen.model(), modelgen.fieldList(), pkidx, modelgen.autoValueIndex(), childErb);
+                ErbGenerator viewgen(modelgen.model(), modelgen.fieldList(), pkidx, modelgen.autoValueIndex(), childTables.values());
                 viewgen.generate(D_VIEWS);
             } else {
                 qCritical("Invalid template system specified: %s", qPrintable(templateSystem));
