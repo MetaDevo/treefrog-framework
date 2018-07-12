@@ -285,7 +285,9 @@ QMap<QString, QPair<QString, QString>> TableSchema::getParentTables() const
 
 
 
-
+/**
+ * @return map: key is (child model name, child field name), value is parent field name
+ **/
 QMap<QPair<QString, QString>, QString> TableSchema::getChildTables() const
 {
     QMap<QPair<QString, QString>, QString> map;
