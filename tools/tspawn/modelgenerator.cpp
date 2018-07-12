@@ -60,6 +60,7 @@
     "    static int count();\n"                          \
     "    static QList<%model%> getAll();\n"              \
     "    static QList<%model%> getAll(const int limit,const int offset);\n"              \
+    "    static QList<QPair<QString, QVariant>> getAllOptions();\n"                      \
     "%8%"                                                \
     "\n"                                                 \
     "private:\n"                                         \
@@ -150,6 +151,7 @@
     "}\n"                                                     \
     "\n"                                                      \
     "%12%"                                                    \
+    "%40%"                                                    \
     "TModelObject *%model%::modelData()\n"                    \
     "{\n"                                                     \
     "    return d.data();\n"                                  \
@@ -365,6 +367,22 @@
     "    if (mapper.find()) {\n"                              \
     "        while (mapper.next()) {\n"                       \
     "            array.append(QJsonValue(QJsonObject::fromVariantMap(%model%(mapper.value()).toVariantMap())));\n" \
+    "        }\n"                                             \
+    "    }\n"                                                 \
+    "    return array;\n"                                     \
+    "}\n"                                                     \
+    "\n"
+
+#define MODEL_IMPL_GETALLOPTIONS                              \
+    "QList<QPair<QString, QVariant>> %model%::getAllOptions()\n"                      \
+    "{\n"                                                     \
+    "    QList<QPair<QString, QVariant>> array;\n"                                 \
+    "    TSqlORMapper<%model%Object> mapper;\n"               \
+    "\n"                                                      \
+    "    if (mapper.find() > 0) {\n"                          \
+    "        for (TSqlORMapperIterator<%model%Object> i(mapper); i.hasNext(); ) {\n" \
+    "            %model%Object iobj = i.next();\n                                    \
+    "            array.push_back(QPair<QString, QVariant>(iobj.name, iobj.id));\n"   \
     "        }\n"                                             \
     "    }\n"                                                 \
     "    return array;\n"                                     \
@@ -654,6 +672,7 @@ QPair<ModelGenerator::PlaceholderList, ModelGenerator::PlaceholderList> ModelGen
              << pair("10", getOptImpl)
              << pair("50", genParentAccessorImpl())
              << pair("51", genChildAccessorImpl())
+             << pair("40", replaceholder(MODEL_IMPL_GETALLOPTIONS, pair("model", modelName)))
              << pair("11", ((objectType == Mongo) ? "Mongo" : ""));
 
     headerList << pair("7", "class QJsonArray;\n")
@@ -673,7 +692,7 @@ QPair<ModelGenerator::PlaceholderList, ModelGenerator::PlaceholderList> ModelGen
         break;
     }
 
-    implList <<  pair("13", mapperstr);
+    implList << pair("13", mapperstr);
     return qMakePair(headerList, implList);
 }
 
@@ -742,7 +761,7 @@ QString ModelGenerator::genParentAccessor() {
     QMap<QString, QVariant::Type> fieldTypeMap = objGen->fieldTypeMap();
 
     QString ret;
-    QString t("    static QList<%1> %2(%4 %3);\n"); 
+    QString t("    static QList<%1> %2(%4 %3);\n");
 
     for (auto k: parentTables.keys()) {
             QPair<QString, QString> v = parentTables.value(k);
@@ -781,14 +800,14 @@ QString ModelGenerator::genParentAccessorImpl() {
 
     QString ret;
     QString t("\
-/**Parent Accesor**/\n\
+/** Parent Accessor **/\n\
 QList<%1> %1::%2(%5 %4)\n\
 {\n\
     TSqlORMapper<%1Object> mapper;\n\
     TCriteria cri;\n\
     cri.add(%1Object::%3, %4);\n\
     return tfGetModelListByCriteria<%1, %1Object>(cri);\n\
-}\n\n"); 
+}\n\n");
 
     for (auto k: parentTables.keys()) {
             QPair<QString, QString> v = parentTables.value(k);
@@ -808,21 +827,18 @@ QString ModelGenerator::genChildAccessorImpl() {
 
     QString ret;
     QString t("\
-/**Child Accesor**/\n\
-QList<%1> &%2::%5() {\n\
-    if (!this->isNew())\n\
-        d->%3 =  %1::%4(this->%6());\n\
-\n\
-    return d->%3;\n\
-}\n\
-\n");
+/** Child Accessor **/\n\
+QList<%1> %2::%5()\n\
+{\n\
+    return %1::%4(d->%3);\n\
+}\n\n");
 
     for (auto k: childTables.keys()) {
-            QString parentGetName = childTables.value(k);
+            //QString parentGetName = childTables.value(k);
             QString childModelName = fieldNameToEnumName(k.first);
             QString childFieldName = k.second;
             QString childMethodName = fieldNameToVariableName("get_by_" + childFieldName);
-            QString parentFieldName = "_" + fieldNameToVariableName(k.first) + "_";
+            QString parentFieldName = fieldNameToVariableName(k.first) + "_";
             parentFieldName += fieldNameToVariableName(k.second);
             QString parentMethodName = fieldNameToVariableName(k.first);
 
@@ -834,7 +850,7 @@ QList<%1> &%2::%5() {\n\
 //            qDebug() << "childFieldName: " << childFieldName;
 //            qDebug() << "childMethodName: " << childMethodName;
 
-	    ret += t.arg(childModelName).arg(modelName).arg(parentFieldName).arg(childMethodName).arg(parentMethodName).arg(parentGetName);
+	    ret += t.arg(childModelName).arg(modelName).arg(parentFieldName).arg(childMethodName).arg(parentMethodName);
     }
     return ret;
 }
