@@ -10,7 +10,7 @@
 class ErbGenerator
 {
 public:
-    ErbGenerator(const QString &view, const QList<QPair<QString, QVariant::Type>> &fields, int pkIdx, int autoValIdx, const QList<QString> &childText);
+    ErbGenerator(const QString &view, const QList<QPair<QString, QVariant::Type>> &fields, int pkIdx, int autoValIdx, const QMap<QPair<QString, QString>, QString> &childTables);
     bool generate(const QString &dstDir) const;
     QString genChildIndex(const QString &parentViewName, const QString &parentFieldName, const QString &childTableName, const QString &childFieldName) const;
 
@@ -19,7 +19,7 @@ private:
     QList<QPair<QString, QVariant::Type>> fieldList;
     int primaryKeyIndex;
     int autoValueIndex;
-    QList<QString> childTables;
+    QMap<QPair<QString, QString>, QString> childTables;
 };
 
 #endif // ERBGENERATOR_H

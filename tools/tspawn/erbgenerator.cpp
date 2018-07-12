@@ -177,8 +177,8 @@ static const QStringList excludedDirName = {
 };
 
 
-ErbGenerator::ErbGenerator(const QString &view, const QList<QPair<QString, QVariant::Type>> &fields, int pkIdx, int autoValIdx, const QList<QString> &ct)
-    : viewName(view), fieldList(fields), primaryKeyIndex(pkIdx), autoValueIndex(autoValIdx), childTables(ct)
+ErbGenerator::ErbGenerator(const QString &view, const QList<QPair<QString, QVariant::Type>> &fields, int pkIdx, int autoValIdx, const QMap<QPair<QString, QString>, QString> &childTables)
+    : viewName(view), fieldList(fields), primaryKeyIndex(pkIdx), autoValueIndex(autoValIdx), childTables(childTables)
 { }
 
 
@@ -233,10 +233,11 @@ bool ErbGenerator::generate(const QString &dstDir) const
                 entryitems += "  <p>\n    <label>";
                 entryitems += icap;
 
-                if (childTables.indexOf(p.first) != -1) {
+                int childIndex = childTables.values().indexOf(p.first);
+                if (childIndex != -1) {
                     entryitems += "<br /><select name=\"";
                     entryitems += varName + '[' + ivar + ']' + "\">\t";
-                    entryitems += "<%== optionTags(" + viewName + "::validChildren()) %>";
+                    entryitems += "<%== optionTags(" + childTables.keys().at(childIndex).first + "::getAllOptions()) %>";
                     entryitems += "</select>";
                 } else {
                     entryitems += "<br /><input name=\"";
@@ -292,7 +293,7 @@ bool ErbGenerator::generate(const QString &dstDir) const
 }
 
 QString ErbGenerator::genChildIndex(const QString &parentViewName, const QString &parentFieldName, const QString &childTableName, const QString &childFieldName) const
-{ 
+{
     QString caption = enumNameToCaption(viewName);
     QString varName = enumNameToVariableName(viewName);
     QString parentVarName = enumNameToVariableName(parentViewName);
@@ -326,5 +327,5 @@ qDebug() << "childFieldName: " << childFieldName;
     }
 
     return QString(CHILD_INDEX_TEMPLATE).arg(varName.toLower()).arg(caption).arg(th).arg(viewName).arg(varName).arg(td).arg(pkVarName).arg(methodName).arg(parentVariableName).arg(parentVarName);
-    //                                   1                      2            3       4             5            6       7              8               9                      10 
+    //                                   1                      2            3       4             5            6       7              8               9                      10
 }
